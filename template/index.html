@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <title>News Searching</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="icon" href="https://cdn2.iconfinder.com/data/icons/flatte-social-networks-part-1/80/13_-_News-512.png" type="image/gif" sizes="50x50">
+</head>
+<body class="bg-blue-100 overflow-y-scroll">
+  <!-- start main-content -->
+  <div id="main-content">
+    <div class="flex flex-col justify-center items-center py-6">
+      <div id="search-bar" class="container my-2 p-3">
+        <div class="flex justify-center items-center">
+          <img src="https://albertawilderness.ca/wp-content/uploads/2015/09/icon-news.png" style="width:180px; height:130px;"> 
+          <h1 class="text-7xl font-mono font-bold pb-5 text-green-500">Searching</h1> 
+        </div>
+      </div>
+      <div id="search-bar" class="container bg-green-200 rounded-full shadow-inner sm:w-3/4 lg:w-3/5 my-5 p-3">
+        <div class="flex space-x-5 justify-center items-center">
+          <div class="w-4/5">
+            <input id="query-input" type="text" class="outline-none px-3 p-2 w-full rounded-full shadow-inner bg-white-100 bg-opacity-50 font-mono" placeholder="Search for Query ...">
+          </div>
+          <div class="w-1/5">
+            <input id="totaldocs-input" type="text" class="outline-none px-3 p-2 w-full rounded-full shadow-inner bg-white-100 bg-opacity-50 font-mono" placeholder="Total Docs">
+          </div>
+          <div>
+            <button id="search" type="submit" onclick="search_query(document.getElementById('query-input').value, document.getElementById('totaldocs-input').value)" class="p-1 w-full rounded-lg shadow-2xl focus:outline-none focus:ring focus:border-green-500 font-semibold"><img src="https://www.freeiconspng.com/thumbs/search-icon-png/search-icon-png-21.png" alt="Submit" style="width:30px; height:25px;"></button>
+          </div>
+        </div>
+      </div>
+      <div class="container bg-green-100 rounded-lg shadow-lg sm:w-3/4 lg:w-3/5 my-5 p-5">
+        <div id="hasil"></div>
+        <div id="card-hasil" class="flex flex-col">
+        
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- end main-content -->
+
+  <script>
+    var hasil = document.getElementById('hasil');
+
+    function cardBuilder(url, title, text) {
+      return `<div class="flex flex-col py-5">
+                <small class="text-sm text-gray-500 font-semibold">${url}</small>
+                <a href="${url}" target="_blank" class="text-blue-600 font-bold text-lg capitalize">${title}</a>
+                <p class="text-sm text-gray-700">${text}</p>
+              </div>`;
+    }
+
+    function search_query(query, total_docs) {
+      if(!total_docs){
+        total_docs = 10
+      }
+      fetch('api/search/'+query+'/'+total_docs)
+      .then(response => response.json())
+      .then(data => {
+        hasil.innerHTML = `<p class="text-sm text-gray-600">terdapat ${Object.keys(data).length - 1} hasil dalam ${data[0].process_time} detik</p>`;
+        if (data.length > 1){
+          for (let index = 1; index < data.length; index++) {
+            const element = data[index];
+            document.getElementById('card-hasil').innerHTML += cardBuilder(element.url, element.title, element.text)
+          }
+        }
+      });
+    }
+
+    [document.getElementById("query-input"), document.getElementById("totaldocs-input")].forEach(item => {
+      item.addEventListener("keyup", function(event) {
+      // Number 13 is the "Enter" key on the keyboard
+        if (event.keyCode === 13) {
+          document.getElementById('card-hasil').innerHTML = '';
+          document.getElementById("search").click();
+        }
+      })
+    });
+  </script>
+  
+</body>
+</html>
